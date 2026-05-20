@@ -32,10 +32,12 @@ export interface Part {
   idOemNumber: number;
   name: string;
   amount: number;
+  Amount?: number;
   description: string;
   weight: string;
   volume: string;
   price?: number;
+  Price?: number;
   rating?: number;
   media?: Media;
   category?: Category;
@@ -75,6 +77,8 @@ export interface Review {
   idUser: number;
   reviewText: string;
   rating: number;
+  reviewDate?: string;
+  ReviewDate?: string;
   user?: User;
 }
 

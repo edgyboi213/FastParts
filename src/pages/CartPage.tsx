@@ -3,12 +3,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, Plus, Minus, ArrowLeft, CreditCard } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { motion, AnimatePresence } from 'motion/react';
+import { PartImage } from '../components/PartImage';
 
 export const CartPage: React.FC = () => {
   const { cart, removeFromCart, updateCartAmount } = useAppContext();
   const navigate = useNavigate();
 
-  const getPrice = (p: any) => p.Price || p.price || 990;
+  const getPrice = (p: any) => p.Price ?? p.price ?? 0;
   const getName = (p: any) => p.Name || p.name || '---';
   const getId = (p: any) => p.IdPart || p.idPart;
 
@@ -47,10 +48,11 @@ export const CartPage: React.FC = () => {
                     className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex gap-4"
                   >
                     <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-lg overflow-hidden bg-gray-50 flex-shrink-0 border border-gray-100">
-                      <img 
-                        src={`https://loremflickr.com/200/200/car,part?lock=${partId}`} 
-                        alt={getName(item.part)} 
-                        className="w-full h-full object-cover"
+                      <PartImage 
+                        part={item.part} 
+                        className="w-full h-full" 
+                        imgClassName="w-full h-full object-cover"
+                        alt={getName(item.part)}
                       />
                     </div>
                     <div className="flex-grow flex flex-col justify-between">

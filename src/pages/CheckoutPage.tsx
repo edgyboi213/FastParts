@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { MapPin, Truck, CreditCard, Wallet, CheckCircle2 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { ordersApi } from '../services/api';
+import { ordersApi, partsApi, orderpartsApi } from '../services/api';
 import { APIProvider, Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps';
 
 const API_KEY =
@@ -28,23 +28,72 @@ export const CheckoutPage: React.FC = () => {
   });
   const [isOrdered, setIsOrdered] = useState(false);
 
-  const total = cart.reduce((acc, item) => acc + (item.part.price || 990) * item.amount, 0);
+  const getPrice = (p: any) => p.Price ?? p.price ?? 0;
+  const getId = (p: any) => p.IdPart || p.idPart;
+
+  const total = cart.reduce((acc, item) => acc + getPrice(item.part) * item.amount, 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (cart.length === 0) return;
     
     try {
-      await ordersApi.create({
-        userId: user?.IdUser || user?.idUser,
-        orderDate: new Date().toISOString(),
-        totalAmount: total,
-        orderDetails: cart.map(item => ({
-          idPart: item.part.idPart,
-          amount: item.amount,
-          price: item.part.price
-        }))
-      });
+      // Decrement the amount for each part in the cart
+      for (const item of cart) {
+        const idVal = getId(item.part);
+        const currentAmount = item.part.Amount !== undefined && item.part.Amount !== null 
+          ? item.part.Amount 
+          : (item.part.amount !== undefined && item.part.amount !== null ? item.part.amount : 10);
+        
+        const newAmount = Math.max(0, currentAmount - item.amount);
+        
+        const partPayload = {
+          ...item.part,
+          Amount: newAmount,
+          amount: newAmount
+        };
+        delete (partPayload as any).Stock;
+        delete (partPayload as any).stock;
+
+        await partsApi.update(idVal, partPayload).catch(err => {
+          console.error(`Failed to subtract amount for part #${idVal}:`, err);
+        });
+      }
+
+      const userId = user?.IdUser || user?.idUser;
+      const orderDate = new Date().toISOString();
+      const orderPayload = {
+        IdUser: userId,
+        idUser: userId,
+        userId: userId,
+        OrderDate: orderDate,
+        orderDate: orderDate,
+        TotalAmount: total,
+        totalAmount: total
+      };
+
+      const createdOrder = await ordersApi.create(orderPayload);
+      const orderId = (createdOrder as any).IdOrder || createdOrder.idOrder || (createdOrder as any).id || (createdOrder as any).Id;
+
+      if (!orderId) {
+        throw new Error('Не удалось получить ID созданного заказа');
+      }
+
+      // Create OrderParts for each item in the cart
+      await Promise.all(
+        cart.map(async (item) => {
+          const partId = getId(item.part);
+          const itemPayload = {
+            IdOrder: orderId,
+            idOrder: orderId,
+            IdPart: partId,
+            idPart: partId,
+            Amount: item.amount,
+            amount: item.amount
+          };
+          await orderpartsApi.create(itemPayload);
+        })
+      );
       setIsOrdered(true);
       setTimeout(() => {
         clearCart();
@@ -228,7 +277,7 @@ export const CheckoutPage: React.FC = () => {
               {cart.map(item => (
                 <div key={item.idCart} className="flex justify-between text-sm">
                   <span className="text-gray-600 line-clamp-1 flex-grow pr-4">{item.part.name} x {item.amount}</span>
-                  <span className="font-bold whitespace-nowrap">{(item.part.price || 990) * item.amount} ₽</span>
+                  <span className="font-bold whitespace-nowrap">{getPrice(item.part) * item.amount} ₽</span>
                 </div>
               ))}
             </div>

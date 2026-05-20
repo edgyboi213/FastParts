@@ -5,6 +5,7 @@ import { partsApi, categoriesApi } from '../services/api';
 import { Part, Category } from '../types';
 import { Star, ShoppingCart, Filter, ArrowUpDown, Package } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import { PartImage } from '../components/PartImage';
 
 export const CategoryPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -37,7 +38,7 @@ export const CategoryPage: React.FC = () => {
     }
   }, [id]);
 
-  const getPrice = (p: any) => p.Price || p.price || 990;
+  const getPrice = (p: any) => p.Price ?? p.price ?? 0;
   const getRating = (p: any) => p.Rating || p.rating || 4.0;
   const getName = (p: any) => p.Name || p.name || '---';
   const getId = (p: any) => p.IdPart || p.idPart;
@@ -149,10 +150,11 @@ export const CategoryPage: React.FC = () => {
                     className="card-geometric group flex flex-col"
                   >
                     <Link to={`/product/${partId}`} className="block aspect-[4/3] overflow-hidden bg-slate-50 relative">
-                      <img 
-                        src={`https://loremflickr.com/450/350/car,part?lock=${partId}`} 
-                        alt={getName(part)} 
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      <PartImage 
+                        part={part} 
+                        className="w-full h-full" 
+                        imgClassName="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        alt={getName(part)}
                       />
                       <div className="absolute top-4 left-4">
                         <span className="bg-white/90 backdrop-blur px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest text-slate-900 shadow-sm border border-slate-100">
@@ -169,8 +171,20 @@ export const CategoryPage: React.FC = () => {
                         <span className="text-xs font-black uppercase tracking-widest text-slate-400">{getRating(part)}</span>
                       </div>
                       <div className="mt-auto flex items-center justify-between">
-                        <span className="text-2xl font-black text-slate-900 italic">{getPrice(part)} ₽</span>
-                        {isInCart(partId) ? (
+                        {part.Amount === 0 || part.amount === 0 ? (
+                          <span className="text-sm font-black text-red-600 uppercase tracking-tight italic">нет в наличии</span>
+                        ) : (
+                          <span className="text-2xl font-black text-slate-900 italic">{getPrice(part)} ₽</span>
+                        )}
+                        {part.Amount === 0 || part.amount === 0 ? (
+                          <button 
+                            disabled
+                            className="px-6 h-11 bg-slate-200 text-slate-400 font-black uppercase tracking-widest text-[11px] rounded-full cursor-not-allowed italic flex items-center gap-2"
+                          >
+                            <ShoppingCart size={16} />
+                            нет в наличии
+                          </button>
+                        ) : isInCart(partId) ? (
                           <Link to="/cart" className="bg-emerald-500 text-white px-5 h-11 rounded-full text-xs font-black uppercase tracking-widest hover:bg-emerald-600 transition-all flex items-center gap-2 shadow-lg shadow-emerald-500/20 italic">
                             В корзине
                           </Link>

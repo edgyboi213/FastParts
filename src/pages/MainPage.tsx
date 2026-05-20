@@ -62,38 +62,6 @@ export const MainPage: React.FC = () => {
 
   return (
     <div className="container-custom py-8">
-      {/* Promo Section */}
-      <div className="mb-12">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="bg-slate-900 rounded-[2rem] p-8 md:p-12 flex flex-col md:flex-row items-center gap-10 shadow-2xl relative overflow-hidden"
-        >
-          <div className="absolute top-0 right-0 w-64 h-64 bg-red-600/10 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2"></div>
-          
-          <div className="flex-1 z-10 text-center md:text-left">
-            <div className="inline-block px-3 py-1 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest rounded-full mb-6">
-              Акция месяца
-            </div>
-            <h1 className="text-4xl md:text-5xl font-black text-white mb-4 leading-none uppercase tracking-tighter">
-              Скидка 15% на все <span className="text-red-600">запчасти BOSCH</span>
-            </h1>
-            <p className="text-slate-400 text-lg mb-8 max-w-lg mx-auto md:mx-0 font-medium">
-              Обеспечьте надежность своего автомобиля оригинальными комплектующими. Акция действует до 31 мая.
-            </p>
-            <button className="px-10 h-14 bg-white text-slate-900 font-black uppercase tracking-widest text-sm rounded-2xl hover:bg-red-600 hover:text-white transition-all transform hover:scale-105 active:scale-95 shadow-lg">
-              Перейти в каталог
-            </button>
-          </div>
-          
-          <div className="w-64 h-64 bg-slate-800 rounded-3xl flex items-center justify-center rotate-6 border border-slate-700 shadow-2xl shrink-0 group hover:rotate-0 transition-transform duration-500">
-            <svg className="w-32 h-32 text-red-600 opacity-80" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99z"/>
-            </svg>
-          </div>
-        </motion.div>
-      </div>
-
       <div className="flex justify-between items-end mb-8">
         <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tighter">Категории</h2>
         <div className="flex gap-4 label-caps font-black">

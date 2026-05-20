@@ -121,7 +121,8 @@ export const AdminPage: React.FC = () => {
         { key: 'Amount', label: 'Количество', type: 'number' },
         { key: 'Description', label: 'Описание', type: 'textarea' },
         { key: 'Weight', label: 'Вес', type: 'text' },
-        { key: 'Volume', label: 'Объем', type: 'text' }
+        { key: 'Volume', label: 'Объем', type: 'text' },
+        { key: 'Price', label: 'Цена', type: 'number' }
       ]
     },
     profilephotoes: {
@@ -142,7 +143,8 @@ export const AdminPage: React.FC = () => {
         { key: 'IdPart', label: 'Запчасть', type: 'number', relation: { entity: 'parts', displayKey: 'Name' } },
         { key: 'IdUser', label: 'Пользователь', type: 'number', relation: { entity: 'users', displayKey: 'FullName' } },
         { key: 'ReviewText', label: 'Текст отзыва', type: 'textarea' },
-        { key: 'Rating', label: 'Рейтинг', type: 'number' }
+        { key: 'Rating', label: 'Рейтинг', type: 'number' },
+        { key: 'ReviewDate', label: 'Дата отзыва', type: 'text' }
       ]
     },
     users: {
@@ -260,16 +262,99 @@ export const AdminPage: React.FC = () => {
 
   const handleSave = async () => {
     try {
+      const payload: any = {};
+      
+      const sanitizeDateValue = (val: any) => {
+        if (val === '' || val === null || val === undefined) {
+          return null;
+        }
+        if (typeof val === 'string') {
+          const trimmed = val.trim();
+          if (!trimmed) return null;
+          // Try to parse standard Russian date "DD.MM.YYYY" or "DD.MM.YYYY HH:MM:ss"
+          const ruDateRegex = /^(\d{2})\.(\d{2})\.(\d{4})(.*)$/;
+          const match = trimmed.match(ruDateRegex);
+          if (match) {
+            const [_, day, month, year, timePart] = match;
+            let isoStr = `${year}-${month}-${day}`;
+            if (timePart && timePart.trim()) {
+              isoStr += `T${timePart.trim()}`;
+            } else {
+              isoStr += `T12:00:00Z`; // safe default midday
+            }
+            const parsed = new Date(isoStr);
+            if (!isNaN(parsed.getTime())) {
+              return parsed.toISOString();
+            }
+          }
+          
+          // Try passing to standard Date constructor
+          const parsed = new Date(trimmed);
+          if (!isNaN(parsed.getTime())) {
+            return parsed.toISOString();
+          }
+        }
+        return val;
+      };
+
+      currentConfig.fields.forEach(f => {
+        const val = formData[f.key];
+        let finalizedValue: any = val;
+        
+        if (f.key.toLowerCase().includes('date')) {
+          finalizedValue = sanitizeDateValue(val);
+        } else if (f.type === 'number') {
+          if (val === '' || val === null || val === undefined) {
+            finalizedValue = null;
+          } else {
+            const num = Number(val);
+            finalizedValue = isNaN(num) ? null : num;
+          }
+        }
+        
+        payload[f.key] = finalizedValue;
+        
+        // Match both camelCase and PascalCase
+        const camelKey = f.key.charAt(0).toLowerCase() + f.key.slice(1);
+        payload[camelKey] = finalizedValue;
+      });
+
+      // Ensure mandatory relations are never NaN or null regardless of action (Create or Update)
+      if (activeEntity === 'parts') {
+        if (payload['IdMedia'] === null || payload['IdMedia'] === undefined || isNaN(payload['IdMedia'])) payload['IdMedia'] = 1;
+        if (payload['IdCategory'] === null || payload['IdCategory'] === undefined || isNaN(payload['IdCategory'])) payload['IdCategory'] = 1;
+        if (payload['IdOemNumber'] === null || payload['IdOemNumber'] === undefined || isNaN(payload['IdOemNumber'])) payload['IdOemNumber'] = 1;
+        
+        payload['idMedia'] = payload['IdMedia'];
+        payload['idCategory'] = payload['IdCategory'];
+        payload['idOemNumber'] = payload['IdOemNumber'];
+      }
+
+      if (activeEntity === 'reviews') {
+        if (payload['IdPart'] === null || payload['IdPart'] === undefined || isNaN(payload['IdPart'])) payload['IdPart'] = 1;
+        if (payload['IdUser'] === null || payload['IdUser'] === undefined || isNaN(payload['IdUser'])) payload['IdUser'] = 1;
+        
+        payload['idPart'] = payload['IdPart'];
+        payload['idUser'] = payload['IdUser'];
+      }
+
       if (editingItem) {
-        await currentConfig.api.update(getValue(editingItem, currentConfig.idField), formData);
+        const idVal = getValue(editingItem, currentConfig.idField);
+        if (idVal !== null && idVal !== undefined) {
+          const idNum = Number(idVal);
+          payload[currentConfig.idField] = idNum;
+          const camelId = currentConfig.idField.charAt(0).toLowerCase() + currentConfig.idField.slice(1);
+          payload[camelId] = idNum;
+        }
+        await currentConfig.api.update(getValue(editingItem, currentConfig.idField), payload);
       } else {
-        await currentConfig.api.create(formData);
+        await currentConfig.api.create(payload);
       }
       handleCloseModal();
       fetchData();
     } catch (err) {
       console.error('Error saving:', err);
-      alert('Ошибка при сохранении');
+      alert('Ошибка при сохранении. Проверьте правильность заполнения полей.');
     }
   };
 
@@ -528,7 +613,7 @@ export const AdminPage: React.FC = () => {
                       <select
                         className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-5 text-sm font-bold text-slate-900 focus:outline-none focus:border-red-600 transition-colors"
                         value={formData[f.key] || ''}
-                        onChange={(e) => setFormData({ ...formData, [f.key]: Number(e.target.value) })}
+                        onChange={(e) => setFormData({ ...formData, [f.key]: e.target.value === '' ? '' : Number(e.target.value) })}
                       >
                         <option value="">Выберите {f.label}</option>
                         {relatedData[f.relation.entity]?.map(relItem => {
@@ -552,7 +637,7 @@ export const AdminPage: React.FC = () => {
                         type={f.type === 'password' ? 'password' : f.type}
                         className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-5 text-sm font-bold text-slate-900 focus:outline-none focus:border-red-600 transition-colors"
                         value={formData[f.key] || ''}
-                        onChange={(e) => setFormData({ ...formData, [f.key]: f.type === 'number' ? Number(e.target.value) : e.target.value })}
+                        onChange={(e) => setFormData({ ...formData, [f.key]: f.type === 'number' ? (e.target.value === '' ? '' : Number(e.target.value)) : e.target.value })}
                       />
                     )}
                   </div>

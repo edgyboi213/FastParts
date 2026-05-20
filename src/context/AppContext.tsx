@@ -49,6 +49,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const addToCart = (part: Part, amount: number = 1) => {
     const partId = part.idPart || (part as any).IdPart;
+    const qty = part.Amount !== undefined && part.Amount !== null ? part.Amount : part.amount;
+    if (qty === 0) {
+      alert('Данного товара нет в наличии');
+      return;
+    }
     setCart(prev => {
       const existing = prev.find(item => item.idPart === partId || (item as any).IdPart === partId);
       if (existing) {

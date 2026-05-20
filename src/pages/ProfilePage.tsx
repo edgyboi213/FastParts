@@ -3,14 +3,17 @@ import { useAppContext } from '../context/AppContext';
 import { User as UserIcon, Package, Heart, Settings, Phone, MapPin, Edit2, Save } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link } from 'react-router-dom';
-import { ordersApi, usersApi } from '../services/api';
-import { Order } from '../types';
+import { ordersApi, usersApi, partsApi } from '../services/api';
+import { Order, Part } from '../types';
+import { PartImage } from '../components/PartImage';
 
 type Tab = 'info' | 'orders' | 'favorites';
 
 export const ProfilePage: React.FC = () => {
   const { user, setUser, favorites } = useAppContext();
   const [activeTab, setActiveTab] = useState<Tab>('info');
+  const [favoriteParts, setFavoriteParts] = useState<Part[]>([]);
+  const [loadingFavorites, setLoadingFavorites] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
@@ -72,6 +75,27 @@ export const ProfilePage: React.FC = () => {
     }
   }, [activeTab, user]);
 
+  useEffect(() => {
+    if (activeTab === 'favorites' && favorites.length > 0) {
+      setLoadingFavorites(true);
+      Promise.all(
+        favorites.map(id => 
+          partsApi.getById(id).catch(err => {
+            console.error(`Failed to fetch part ${id}`, err);
+            return null;
+          })
+        )
+      ).then(results => {
+        setFavoriteParts(results.filter((p): p is Part => p !== null));
+        setLoadingFavorites(false);
+      }).catch(() => {
+        setLoadingFavorites(false);
+      });
+    } else {
+      setFavoriteParts([]);
+    }
+  }, [activeTab, favorites]);
+
   if (!user) {
     return (
       <div className="container-custom py-20 text-center">
@@ -86,25 +110,33 @@ export const ProfilePage: React.FC = () => {
     if (!userId) return;
 
     try {
-      const updatedUser = { 
-        ...user, 
+      // Create a clean object for the server that strictly matches the C# model
+      const serverUser = {
         IdUser: userId,
-        FullName: editData.fullName,
+        IdProfilePhoto: user.IdProfilePhoto || user.idProfilePhoto || 1,
+        FullName: editData.fullName || user.FullName || user.fullName || 'User',
+        Login: user.Login || user.login || '',
+        Password: user.Password || '', // Required by the server model!
         Phone: editData.phone,
-        DeliveryAddress: editData.address,
-        // Fallback for types or legacy code
-        idUser: userId,
-        fullName: editData.fullName,
-        phone: editData.phone,
-        address: editData.address
+        DeliveryAddress: editData.address
       };
 
-      await usersApi.update(userId, updatedUser);
-      setUser(updatedUser);
+      await usersApi.update(userId, serverUser);
+      
+      // Update local state with both casing for compatibility
+      const updatedLocalUser = {
+        ...user,
+        ...serverUser,
+        fullName: serverUser.FullName,
+        phone: serverUser.Phone,
+        address: serverUser.DeliveryAddress
+      };
+      
+      setUser(updatedLocalUser);
       setIsEditing(false);
     } catch (error) {
       console.error("Failed to update profile:", error);
-      alert("Не удалось сохранить изменения. Пожалуйста, попробуйте позже.");
+      alert("Ошибка при сохранении: " + (error as any).response?.data || "Проверьте корректность данных.");
     }
   };
 
@@ -268,19 +300,33 @@ export const ProfilePage: React.FC = () => {
                       <Heart size={48} className="mx-auto mb-4 opacity-20" />
                       Пока здесь ничего нет
                     </div>
+                  ) : loadingFavorites ? (
+                    <div className="flex justify-center py-12">
+                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-red-600"></div>
+                    </div>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {favorites.map(id => (
-                        <Link key={id} to={`/product/${id}`} className="flex gap-4 border border-gray-100 rounded-xl p-3 hover:bg-gray-50 transition-colors">
-                          <div className="w-16 h-16 rounded bg-gray-50 flex-shrink-0">
-                            <img src={`https://loremflickr.com/100/100/car,part?lock=${id}`} className="w-full h-full object-cover rounded" />
-                          </div>
-                          <div>
-                            <div className="font-bold text-sm line-clamp-1">Запчасть #{id}</div>
-                            <div className="text-red-600 font-bold">1 200 ₽</div>
-                          </div>
-                        </Link>
-                      ))}
+                      {favoriteParts.map(part => {
+                        const partId = part.idPart;
+                        const partName = part.name || `Запчасть #${partId}`;
+                        const partPrice = part.price || 990;
+                        return (
+                          <Link key={partId} to={`/product/${partId}`} className="flex gap-4 border border-gray-100 rounded-xl p-3 hover:bg-gray-50 transition-colors">
+                            <div className="w-16 h-16 rounded bg-gray-50 flex-shrink-0 overflow-hidden">
+                              <PartImage 
+                                part={part} 
+                                className="w-full h-full" 
+                                imgClassName="w-full h-full object-cover rounded"
+                                alt={partName}
+                              />
+                            </div>
+                            <div className="flex flex-col justify-center">
+                              <div className="font-bold text-sm line-clamp-1">{partName}</div>
+                              <div className="text-red-600 font-bold mt-1">{partPrice} ₽</div>
+                            </div>
+                          </Link>
+                        );
+                      })}
                     </div>
                   )}
                 </motion.div>

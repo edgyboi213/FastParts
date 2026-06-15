@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { motion } from 'motion/react';
 import { partsApi, categoriesApi } from '../services/api';
 import { Part, Category } from '../types';
 import { Star, ShoppingCart, Filter, ArrowUpDown, Package } from 'lucide-react';
@@ -24,10 +23,19 @@ export const CategoryPage: React.FC = () => {
       setLoading(true);
       setError(null);
       Promise.all([
-        partsApi.getByCategory(Number(id)),
+        partsApi.getAll(),
         categoriesApi.getById(Number(id))
       ]).then(([partsData, catData]) => {
-        setParts(partsData);
+        const filteredParts = partsData.filter((part: any) => {
+          const partCategoryId = 
+            part.idCategory !== undefined && part.idCategory !== null ? part.idCategory :
+            part.IdCategory !== undefined && part.IdCategory !== null ? part.IdCategory :
+            part.category?.idCategory !== undefined && part.category?.idCategory !== null ? part.category?.idCategory :
+            part.category?.IdCategory !== undefined && part.category?.IdCategory !== null ? part.category?.IdCategory :
+            undefined;
+          return Number(partCategoryId) === Number(id);
+        });
+        setParts(filteredParts);
         setCategory(catData);
         setLoading(false);
       }).catch(err => {
@@ -142,11 +150,8 @@ export const CategoryPage: React.FC = () => {
               {sortedParts.map((part) => {
                 const partId = getId(part);
                 return (
-                  <motion.div
+                  <div
                     key={partId}
-                    layout
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
                     className="card-geometric group flex flex-col"
                   >
                     <Link to={`/product/${partId}`} className="block aspect-[4/3] overflow-hidden bg-slate-50 relative">
@@ -199,7 +204,7 @@ export const CategoryPage: React.FC = () => {
                         )}
                       </div>
                     </div>
-                  </motion.div>
+                  </div>
                 );
               })}
             </div>

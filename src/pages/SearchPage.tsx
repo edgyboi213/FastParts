@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { motion } from 'motion/react';
 import { partsApi } from '../services/api';
 import { Part } from '../types';
 import { Star, ShoppingCart, Filter, ArrowUpDown, Package, Search } from 'lucide-react';
@@ -127,11 +126,8 @@ export const SearchPage: React.FC = () => {
               {sortedParts.map((part) => {
                 const partId = getId(part);
                 return (
-                  <motion.div
+                  <div
                     key={partId}
-                    layout
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
                     className="card-geometric group flex flex-col"
                   >
                     <Link to={`/product/${partId}`} className="block aspect-[4/3] overflow-hidden bg-slate-50 relative">
@@ -184,7 +180,7 @@ export const SearchPage: React.FC = () => {
                         )}
                       </div>
                     </div>
-                  </motion.div>
+                  </div>
                 );
               })}
             </div>

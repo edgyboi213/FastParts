@@ -69,7 +69,9 @@ export const CheckoutPage: React.FC = () => {
         OrderDate: orderDate,
         orderDate: orderDate,
         TotalAmount: total,
-        totalAmount: total
+        totalAmount: total,
+        Status: 'Новый',
+        status: 'Новый'
       };
 
       const createdOrder = await ordersApi.create(orderPayload);

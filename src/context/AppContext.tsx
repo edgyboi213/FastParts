@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, CartItem, Part } from '../types';
+import { mediaApi } from '../services/api';
 
 interface AppContextType {
   user: User | null;
@@ -13,6 +14,8 @@ interface AppContextType {
   favorites: number[];
   toggleFavorite: (partId: number) => void;
   clearCart: () => void;
+  mediaList: any[];
+  refreshMediaList: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -34,6 +37,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const saved = localStorage.getItem('favorites');
     return saved ? JSON.parse(saved) : [];
   });
+
+  const [mediaList, setMediaList] = useState<any[]>([]);
+
+  const refreshMediaList = async () => {
+    try {
+      const data = await mediaApi.getAll();
+      setMediaList(data || []);
+    } catch (err) {
+      console.error('Failed to load media list in AppContext:', err);
+    }
+  };
+
+  useEffect(() => {
+    refreshMediaList();
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('user', JSON.stringify(user));
@@ -99,7 +117,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       user, setUser,
       cart, addToCart, removeFromCart, updateCartAmount, clearCart,
       searchQuery, setSearchQuery,
-      favorites, toggleFavorite
+      favorites, toggleFavorite,
+      mediaList, refreshMediaList
     }}>
       {children}
     </AppContext.Provider>

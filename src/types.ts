@@ -61,6 +61,11 @@ export interface User {
   login?: string;
   phone?: string;
   address?: string;
+
+  Photo?: string;
+  photo?: string;
+  PhotoUrl?: string;
+  photoUrl?: string;
 }
 
 export interface CartItem {
@@ -88,6 +93,8 @@ export interface Order {
   orderDate: string;
   totalAmount?: number;
   parts?: OrderPart[];
+  status?: string;
+  Status?: string;
 }
 
 export interface OrderPart {

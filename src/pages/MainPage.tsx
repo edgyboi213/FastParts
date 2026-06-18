@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { categoriesApi } from '../services/api';
 import { Category } from '../types';
-import { ChevronRight, Filter, Lightbulb, Disc, Zap, Package } from 'lucide-react';
+import { ChevronRight, Filter, Lightbulb, Disc, Zap, Package, Accessibility, GalleryVerticalEnd } from 'lucide-react';
 
 export const MainPage: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -23,13 +23,8 @@ export const MainPage: React.FC = () => {
       });
   }, []);
 
-  const getCategoryIcon = (name: string) => {
-    const n = name.toLowerCase();
-    if (n.includes('фильтр')) return <Filter size={48} />;
-    if (n.includes('ламп')) return <Lightbulb size={48} />;
-    if (n.includes('тормоз')) return <Disc size={48} />;
-    if (n.includes('зажиг')) return <Zap size={48} />;
-    return <Package size={48} />;
+  const getCategoryIcon = () => {
+    return <GalleryVerticalEnd size={48} />;
   };
 
   if (loading) {
@@ -84,7 +79,7 @@ export const MainPage: React.FC = () => {
               <div className="h-40 w-full mb-6 bg-slate-50 rounded-2xl flex items-center justify-center relative group-hover:bg-red-50 transition-colors">
                 <div className="absolute inset-0 bg-gradient-to-tr from-red-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-lg border border-slate-100 text-red-600 group-hover:scale-110 transition-transform duration-500">
-                  {getCategoryIcon(category.name)}
+                  {getCategoryIcon()}
                 </div>
               </div>
               <div className="text-center group">

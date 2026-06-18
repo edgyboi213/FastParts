@@ -185,7 +185,7 @@ export const AdminPage: React.FC = () => {
       api: orderpartsApi,
       idField: 'IdOrderPart',
       fields: [
-        { key: 'IdOrder', label: 'Заказ #', type: 'number' },
+        { key: 'IdOrder', label: 'Номер заказа', type: 'number' },
         { key: 'IdPart', label: 'Запчасть', type: 'number', relation: { entity: 'parts', displayKey: 'Name' } },
         { key: 'Amount', label: 'Количество', type: 'number' }
       ]
@@ -717,9 +717,6 @@ export const AdminPage: React.FC = () => {
                 <table className="w-full text-left border-collapse min-w-[800px]">
                   <thead>
                     <tr className="border-b border-slate-50 bg-slate-50/50">
-                      <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                        ID
-                      </th>
                       {currentConfig.fields.map(f => (
                         <th key={f.key} className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">
                           {f.label}
@@ -733,9 +730,7 @@ export const AdminPage: React.FC = () => {
                   <tbody className="divide-y divide-slate-50">
                     {filteredData.map((item, idx) => (
                       <tr key={idx} className="hover:bg-slate-50/50 transition-colors group">
-                        <td className="px-6 py-5 text-sm font-black text-slate-900">
-                          #{getValue(item, currentConfig.idField)}
-                        </td>
+
                         {currentConfig.fields.map(f => {
                           const rawValue = getValue(item, f.key);
                           const value = resolveLabel(f.key, rawValue, f);

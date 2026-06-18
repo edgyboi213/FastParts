@@ -276,10 +276,6 @@ export const ProductPage: React.FC = () => {
                   <span className="text-gray-500">Объем:</span>
                   <span className="font-medium">{getVolume(part)}</span>
                 </div>
-                <div className="flex justify-between border-b border-gray-50 py-1">
-                  <span className="text-gray-500">Бренд:</span>
-                  <span className="font-medium">FastParts Original</span>
-                </div>
               </div>
             </div>
           </div>

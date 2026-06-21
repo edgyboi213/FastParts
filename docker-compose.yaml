@@ -1,0 +1,9 @@
+services:
+  react-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fastparts_frontend
+    ports:
+      - "5002:80"
+    restart: unless-stopped

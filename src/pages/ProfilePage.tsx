@@ -22,7 +22,7 @@ export const ProfilePage: React.FC = () => {
   const [editData, setEditData] = useState({
     fullName: user?.FullName || user?.fullName || '',
     phone: user?.Phone || user?.phone || '',
-    address: user?.DeliveryAddress || user?.address || '',
+    address: user?.DeliveryAddress || user?.deliveryAddress || user?.address || '',
     idProfilePhoto: user?.IdProfilePhoto || user?.idProfilePhoto || 1
   });
 
@@ -44,7 +44,8 @@ export const ProfilePage: React.FC = () => {
             IdUser: fullUser.IdUser || userId,
             FullName: fullUser.FullName || fullUser.fullName || user?.FullName || user?.fullName || '',
             Phone: fullUser.Phone || fullUser.phone || user?.Phone || user?.phone || '',
-            DeliveryAddress: fullUser.DeliveryAddress || fullUser.address || user?.DeliveryAddress || user?.address || ''
+            DeliveryAddress: fullUser.DeliveryAddress || fullUser.deliveryAddress || fullUser.address || user?.DeliveryAddress || user?.deliveryAddress || user?.address || '',
+            Password: user?.Password || user?.password || fullUser.Password || fullUser.password || ''
           });
           setHasRefreshed(true);
         }
@@ -70,7 +71,7 @@ export const ProfilePage: React.FC = () => {
       setEditData({
         fullName: user.FullName || user.fullName || '',
         phone: user.Phone || user.phone || '',
-        address: user.DeliveryAddress || user.address || '',
+        address: user.DeliveryAddress || user.deliveryAddress || user.address || '',
         idProfilePhoto: user.IdProfilePhoto || user.idProfilePhoto || 1
       });
     }
@@ -183,7 +184,7 @@ export const ProfilePage: React.FC = () => {
         IdProfilePhoto: editData.idProfilePhoto || 1,
         FullName: editData.fullName || user.FullName || user.fullName || 'User',
         Login: user.Login || user.login || '',
-        Password: user.Password || '', // Required by the server model!
+        Password: user.Password || user.password || '', // Required by the server model!
         Phone: editData.phone,
         DeliveryAddress: editData.address
       };
@@ -194,9 +195,11 @@ export const ProfilePage: React.FC = () => {
       const updatedLocalUser = {
         ...user,
         ...serverUser,
+        Password: serverUser.Password,
         fullName: serverUser.FullName,
         phone: serverUser.Phone,
-        address: serverUser.DeliveryAddress
+        address: serverUser.DeliveryAddress,
+        deliveryAddress: serverUser.DeliveryAddress
       };
       
       setUser(updatedLocalUser);
@@ -428,7 +431,7 @@ export const ProfilePage: React.FC = () => {
                             onChange={e => setEditData({...editData, address: e.target.value})}
                           />
                         ) : (
-                          <div className="text-lg font-medium">{(user.DeliveryAddress || user.address || '').trim() || 'Не указан'}</div>
+                          <div className="text-lg font-medium">{(user.DeliveryAddress || user.deliveryAddress || user.address || '').trim() || 'Не указан'}</div>
                         )}
                       </div>
                     </div>

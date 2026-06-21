@@ -59,8 +59,10 @@ export interface User {
   idProfilePhoto?: number;
   fullName?: string;
   login?: string;
+  password?: string;
   phone?: string;
   address?: string;
+  deliveryAddress?: string;
 
   Photo?: string;
   photo?: string;

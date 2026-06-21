@@ -4,16 +4,6 @@ import { useAppContext } from '../context/AppContext';
 import { MapPin, Truck, CreditCard, Wallet, CheckCircle2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ordersApi, partsApi, orderpartsApi } from '../services/api';
-import { APIProvider, Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps';
-
-const API_KEY =
-  process.env.GOOGLE_MAPS_PLATFORM_KEY ||
-  (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY ||
-  (globalThis as any).GOOGLE_MAPS_PLATFORM_KEY ||
-  '';
-const hasValidKey = Boolean(API_KEY) && API_KEY !== 'YOUR_API_KEY';
-
-const STORE_LOCATION = { lat: 64.5511, lng: 40.5401 };
 
 export const CheckoutPage: React.FC = () => {
   const { cart, clearCart, user } = useAppContext();
@@ -24,7 +14,7 @@ export const CheckoutPage: React.FC = () => {
     firstName: (user?.FullName || user?.fullName || '').split(' ')[0] || '',
     lastName: (user?.FullName || user?.fullName || '').split(' ')[1] || '',
     phone: user?.Phone || user?.phone || '',
-    address: user?.DeliveryAddress || user?.address || ''
+    address: user?.DeliveryAddress || user?.deliveryAddress || user?.address || ''
   });
   const [isOrdered, setIsOrdered] = useState(false);
 
@@ -196,34 +186,16 @@ export const CheckoutPage: React.FC = () => {
                 <div className="p-4 bg-gray-50 rounded-lg text-sm text-gray-600 italic">
                   Наш магазин находится по адресу: Проспект Обводный канал, 37 корпус 2, Архангельск. Режим работы: 09:00 - 21:00.
                 </div>
-                <div className="aspect-video rounded-xl overflow-hidden bg-gray-200 relative">
-                  {!hasValidKey ? (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-slate-50">
-                      <div className="text-slate-900 font-bold mb-2 uppercase tracking-tight">Требуется API ключ Google Maps</div>
-                      <p className="text-xs text-slate-500 mb-4 max-w-xs">
-                        Пожалуйста, добавьте <code>GOOGLE_MAPS_PLATFORM_KEY</code> в секреты AI Studio (иконка шестеренки → Secrets).
-                      </p>
-                      <a href="https://console.cloud.google.com/google/maps-apis/start" target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-red-600 hover:underline">
-                        Получить ключ
-                      </a>
-                    </div>
-                  ) : (
-                    <APIProvider apiKey={API_KEY} version="weekly">
-                      <Map
-                        defaultCenter={STORE_LOCATION}
-                        defaultZoom={15}
-                        mapId="STORE_LOCATION_MAP"
-                        internalUsageAttributionIds={['gmp_mcp_codeassist_v1_aistudio']}
-                        style={{ width: '100%', height: '100%' }}
-                        gestureHandling={'greedy'}
-                        disableDefaultUI={false}
-                      >
-                        <AdvancedMarker position={STORE_LOCATION} title="БЫСТРЫЕ ДЕТАЛИ">
-                          <Pin background="#dc2626" glyphColor="#fff" borderColor="#991b1b" />
-                        </AdvancedMarker>
-                      </Map>
-                    </APIProvider>
-                  )}
+                <div className="rounded-xl overflow-hidden bg-gray-200 relative">
+                  <iframe 
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d862.8919695619095!2d40.538248736523734!3d64.5407290872637!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x44183682bbcd92a1%3A0xe68b4e0e2abed8ee!2zUHJvc3Bla3QgT2J2b2RueXkgS2FuLiwgMzcg0LrQvtGA0L_Rg9GBIDIsIEFya2hhbmdlbCdzaywgQXJraGFuZ2Vsc2theWEgb2JsYXN0JywgMTYzMDQ2!5e1!3m2!1sen!2sru!4v1782069377683!5m2!1sen!2sru" 
+                    width="100%" 
+                    height="300" 
+                    style={{ border: 0 }} 
+                    allowFullScreen 
+                    loading="lazy" 
+                    referrerPolicy="no-referrer-when-downgrade"
+                  ></iframe>
                 </div>
               </div>
             ) : (

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Category, Part, User, CartItem, Order } from '../types';
 
-const API_BASE_URL = 'http://localhost:5103/api'; // Standard local ASP.NET URL, user can change in .env if needed
+const API_BASE_URL = 'http://94.232.43.184:5001/api'; // Standard local ASP.NET URL, user can change in .env if needed
 
 const api = axios.create({
   baseURL: API_BASE_URL,
